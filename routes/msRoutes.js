@@ -37,7 +37,16 @@ router.get("/all", async (req, res) => {
 
         const data = await MovieSeries.find(filter).sort({ msName: 1 });
 
-        res.status(200).json({ data, totalData: data.length, message: `A MovieSeries fetched${type ? ` with type '${type}'` : ""}${category ? ` and category '${category}'` : ""}${search ? ` matching '${search}'` : ""}, sorted A-Z.` });
+        const groupedData = data.reduce((acc, item) => {
+            const year = item.msYear;
+            if (!acc[year]) {
+                acc[year] = [];
+            }
+            acc[year].push(item);
+            return acc;
+        }, {});
+
+        res.status(200).json({ data: groupedData, totalYears: Object.keys(groupedData).length, totalData: data.length, message: `A MovieSeries fetched${type ? ` with type '${type}'` : ""}${category ? ` and category '${category}'` : ""}${search ? ` matching '${search}'` : ""}, sorted A-Z.` });
     } catch (err) {
         res.status(500).json({ error: err.message });
     };
