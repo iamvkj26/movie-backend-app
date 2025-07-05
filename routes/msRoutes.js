@@ -5,7 +5,7 @@ const MovieSeries = require("../models/msModels.js");
 
 router.post("/post", async (req, res) => {
     try {
-        const { msName, msAbout, msPoster, msLink, msSeason, msCategory, msType, msYear, msGenre, msRating, msUploadedBy } = req.body;
+        const { msName, msAbout, msPoster, msLink, msSeason, msFormat, msIndustry, msYear, msGenre, msRating, msUploadedBy } = req.body;
 
         const existing = await MovieSeries.findOne({ msName: { $regex: new RegExp(`^${msName}$`, "i") } });
 
@@ -16,7 +16,7 @@ router.post("/post", async (req, res) => {
         };
 
         const newMovieSeries = new MovieSeries({
-            msName, msAbout, msPoster, msLink, msSeason, msCategory, msType, msYear, msGenre, msRating, msUploadedBy
+            msName, msAbout, msPoster, msLink, msSeason, msFormat, msIndustry, msYear, msGenre, msRating, msUploadedBy
         });
 
         await newMovieSeries.save();
@@ -28,11 +28,11 @@ router.post("/post", async (req, res) => {
 
 router.get("/all", async (req, res) => {
     try {
-        const { type, category, search } = req.query;
+        const { industry, format, search } = req.query;
         const filter = {};
 
-        if (type) filter.msType = { $regex: new RegExp(`^${type}$`, "i") };
-        if (category) filter.msCategory = { $regex: new RegExp(`^${category}$`, "i") };
+        if (format) filter.msFormat = { $regex: new RegExp(`^${format}$`, "i") };
+        if (industry) filter.msIndustry = { $regex: new RegExp(`^${industry}$`, "i") };
         if (search) filter.msName = { $regex: new RegExp(search, "i") };
 
         const data = await MovieSeries.find(filter).sort({ msName: 1 });
@@ -46,7 +46,7 @@ router.get("/all", async (req, res) => {
             return acc;
         }, {});
 
-        res.status(200).json({ data: groupedData, totalYears: Object.keys(groupedData).length, totalData: data.length, message: `A MovieSeries fetched${type ? ` with type '${type}'` : ""}${category ? ` and category '${category}'` : ""}${search ? ` matching '${search}'` : ""}, sorted A-Z.` });
+        res.status(200).json({ data: groupedData, totalYears: Object.keys(groupedData).length, totalData: data.length, message: `A MovieSeries fetched${industry ? ` with industry '${industry}'` : ""}${format ? ` and format '${format}'` : ""}${search ? ` matching '${search}'` : ""}, sorted A-Z.` });
     } catch (err) {
         res.status(500).json({ error: err.message });
     };
@@ -71,7 +71,7 @@ router.patch("/update/:id", async (req, res) => {
 
         const options = { new: true };
         const data = await MovieSeries.findByIdAndUpdate(id, updatedData, options);
-        res.status(201).json({ data: data, message: `A MovieSeries named '${data.msName}' updated successfully.` });
+        res.status(200).json({ data: data, message: `A MovieSeries named '${data.msName}' updated successfully.` });
     } catch (error) {
         res.status(400).json({ message: error.message });
     };

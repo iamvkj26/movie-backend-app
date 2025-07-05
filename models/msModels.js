@@ -21,11 +21,11 @@ const movieSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-    msCategory: {
+    msFormat: {
         type: String,
         required: true
     },
-    msType: {
+    msIndustry: {
         type: String,
         required: true
     },
