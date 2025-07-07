@@ -8,7 +8,10 @@ const mongoString = process.env.MONGO_URI;
 
 const app = express();
 app.use(express.json());
-app.use(cors());
+app.use(cors({
+    origin: "https://movie-front-app.netlify.app"
+}));
+// app.use(cors());
 
 mongoose.connect(mongoString, {
     useNewUrlParser: true,
