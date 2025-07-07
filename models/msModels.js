@@ -29,6 +29,10 @@ const movieSchema = new mongoose.Schema({
         type: String,
         required: true
     },
+    msOrigin: {
+        type: String,
+        required: true
+    },
     msYear: {
         type: Number,
         required: true

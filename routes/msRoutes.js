@@ -5,22 +5,22 @@ const MovieSeries = require("../models/msModels.js");
 
 router.post("/post", async (req, res) => {
     try {
-        const { msName, msAbout, msPoster, msLink, msSeason, msFormat, msIndustry, msYear, msGenre, msRating, msUploadedBy } = req.body;
+        const { msName, msAbout, msPoster, msLink, msSeason, msFormat, msIndustry, msOrigin, msYear, msGenre, msRating, msUploadedBy } = req.body;
 
         const existing = await MovieSeries.findOne({ msName: { $regex: new RegExp(`^${msName}$`, "i") } });
 
         if (existing) {
             return res.status(409).json({
-                message: `A MovieSeries named '${msName}' already exists.`
+                message: `The '${msName}' already exists.`
             });
         };
 
         const newMovieSeries = new MovieSeries({
-            msName, msAbout, msPoster, msLink, msSeason, msFormat, msIndustry, msYear, msGenre, msRating, msUploadedBy
+            msName, msAbout, msPoster, msLink, msSeason, msFormat, msIndustry, msOrigin, msYear, msGenre, msRating, msUploadedBy
         });
 
         await newMovieSeries.save();
-        res.status(200).json({ data: newMovieSeries, message: `A MovieSeries named '${msName}' added successfully.` });
+        res.status(200).json({ data: newMovieSeries, message: `The '${msName}' added successfully.` });
     } catch (err) {
         res.status(400).json({ error: err.message });
     };
@@ -46,7 +46,7 @@ router.get("/all", async (req, res) => {
             return acc;
         }, {});
 
-        res.status(200).json({ data: groupedData, totalYears: Object.keys(groupedData).length, totalData: data.length, message: `A MovieSeries fetched${industry ? ` with industry '${industry}'` : ""}${format ? ` and format '${format}'` : ""}${search ? ` matching '${search}'` : ""}, sorted A-Z.` });
+        res.status(200).json({ data: groupedData, totalYears: Object.keys(groupedData).length, totalData: data.length, message: `The MovieSeries fetched${industry ? ` with industry '${industry}'` : ""}${format ? ` and format '${format}'` : ""}${search ? ` matching '${search}'` : ""}, sorted A-Z.` });
     } catch (err) {
         res.status(500).json({ error: err.message });
     };
@@ -64,14 +64,14 @@ router.patch("/update/:id", async (req, res) => {
             });
             if (existing) {
                 return res.status(409).json({
-                    message: `A MovieSeries named '${updatedData.msName}' already exists.`
+                    message: `The '${updatedData.msName}' already exists.`
                 });
             };
         };
 
         const options = { new: true };
         const data = await MovieSeries.findByIdAndUpdate(id, updatedData, options);
-        res.status(200).json({ data: data, message: `A MovieSeries named '${data.msName}' updated successfully.` });
+        res.status(200).json({ data: data, message: `The '${data.msName}' updated successfully.` });
     } catch (error) {
         res.status(400).json({ message: error.message });
     };
@@ -81,7 +81,7 @@ router.delete("/delete/:id", async (req, res) => {
     try {
         const id = req.params.id;
         const data = await MovieSeries.findByIdAndDelete(id);
-        res.status(200).json({ message: `A MovieSeries named '${data.msName}' updated successfully.` });
+        res.status(200).json({ message: `The '${data.msName}' deleted successfully.` });
     } catch (error) {
         res.status(400).json({ message: error.message });
     };
