@@ -48,7 +48,7 @@ const movieSchema = new mongoose.Schema({
     msUploadedBy: {
         type: String,
         required: true
-    },
+    }
 });
 
 module.exports = mongoose.model("MovieSeries", movieSchema);
