@@ -30,15 +30,18 @@ router.post("/post", async (req, res) => {
     };
 });
 
-router.get("/all", async (req, res) => {
+router.get("/get", async (req, res) => {
     try {
-        const { genre, industry, format, search } = req.query;
+        const { genre, industry, format, search, watched } = req.query;
         const filter = {};
 
         if (genre) filter.msGenre = { $in: [new RegExp(`^${genre}$`, "i")] };
         if (format) filter.msFormat = { $regex: new RegExp(`^${format}$`, "i") };
         if (industry) filter.msIndustry = { $regex: new RegExp(`^${industry}$`, "i") };
         if (search) filter.msName = { $regex: new RegExp(search, "i") };
+
+        if (watched === "true") filter.msWatched = true;
+        else if (watched === "false") filter.msWatched = false;
 
         const data = await MovieSeries.find(filter).sort({ msName: 1 });
 
@@ -90,6 +93,25 @@ router.delete("/delete/:id", async (req, res) => {
         res.status(200).json({ message: `The '${deleteD.msName}' deleted successfully.` });
     } catch (error) {
         res.status(400).json({ message: error.message });
+    };
+});
+
+router.patch("/watched/:id", async (req, res) => {
+    try {
+        const id = req.params.id;
+        const item = await MovieSeries.findById(id);
+
+        if (!item) return res.status(404).json({ message: "Movie/Series not found." });
+
+        const wasWatched = item.msWatched;
+        item.msWatched = !wasWatched;
+        item.msWatchedAt = !wasWatched ? new Date() : null;
+
+        const watched = await item.save();
+
+        res.status(200).json({ data: watched, message: `The '${watched.msName}' marked as ${watched.msWatched ? "Watched" : "Unwatched"}${watched.msWatched ? ` at ${watched.msWatchedAt.toISOString()}` : ""}.` });
+    } catch (err) {
+        res.status(400).json({ message: err.message });
     };
 });
 

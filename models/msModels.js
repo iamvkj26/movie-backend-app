@@ -17,8 +17,8 @@ const movieSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    msSeason: {
-        type: Number,
+    msGenre: {
+        type: [String],
         required: true
     },
     msFormat: {
@@ -33,12 +33,12 @@ const movieSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    msYear: {
+    msSeason: {
         type: Number,
         required: true
     },
-    msGenre: {
-        type: [String],
+    msYear: {
+        type: Number,
         required: true
     },
     msRating: {
@@ -48,6 +48,14 @@ const movieSchema = new mongoose.Schema({
     msUploadedBy: {
         type: String,
         required: true
+    },
+    msWatched: {
+        type: Boolean,
+        default: false
+    },
+    msWatchedAt: {
+        type: Date,
+        default: null
     }
 });
 
