@@ -37,8 +37,8 @@ const movieSchema = new mongoose.Schema({
         type: Number,
         required: true
     },
-    msYear: {
-        type: Number,
+    msReleaseDate: {
+        type: String,
         required: true
     },
     msRating: {

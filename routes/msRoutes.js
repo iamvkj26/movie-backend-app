@@ -5,22 +5,22 @@ const MovieSeries = require("../models/msModels.js");
 
 router.post("/post", async (req, res) => {
     try {
-        const { msName, msAbout, msPoster, msLink, msSeason, msFormat, msIndustry, msOrigin, msYear, msGenre, msRating, msUploadedBy } = req.body;
+        const { msName, msAbout, msPoster, msLink, msSeason, msFormat, msIndustry, msOrigin, msReleaseDate, msGenre, msRating, msUploadedBy } = req.body;
 
-        if (msName && msYear) {
+        if (msName && msReleaseDate) {
             const existing = await MovieSeries.findOne({
                 msName: { $regex: new RegExp(`^${msName}$`, "i") },
-                msYear: msYear
+                msReleaseDate: msReleaseDate
             });
             if (existing) {
                 return res.status(409).json({
-                    message: `The '${msName}' already exists for the year ${msYear}.`
+                    message: `The '${msName}' already exists for this release date ${msReleaseDate}.`
                 });
             };
         };
 
         const newMovieSeries = new MovieSeries({
-            msName, msAbout, msPoster, msLink, msSeason, msFormat, msIndustry, msOrigin, msYear, msGenre, msRating, msUploadedBy
+            msName, msAbout, msPoster, msLink, msSeason, msFormat, msIndustry, msOrigin, msReleaseDate, msGenre, msRating, msUploadedBy
         });
 
         const add = await newMovieSeries.save();
@@ -46,7 +46,7 @@ router.get("/get", async (req, res) => {
         const data = await MovieSeries.find(filter).sort({ msName: 1 });
 
         const get = data.reduce((acc, item) => {
-            const year = item.msYear;
+            const year = new Date(item.msReleaseDate).getFullYear();
             if (!acc[year]) {
                 acc[year] = [];
             };
@@ -65,15 +65,15 @@ router.patch("/update/:id", async (req, res) => {
         const id = req.params.id;
         const body = req.body;
 
-        if (body.msName && body.msYear) {
+        if (body.msName && body.msReleaseDate) {
             const existing = await MovieSeries.findOne({
                 _id: { $ne: id },
                 msName: { $regex: new RegExp(`^${body.msName}$`, "i") },
-                msYear: body.msYear
+                msReleaseDate: body.msReleaseDate
             });
             if (existing) {
                 return res.status(409).json({
-                    message: `The '${body.msName}' already exists for the year ${body.msYear}.`
+                    message: `The '${body.msName}' already exists for this release date ${body.msReleaseDate}.`
                 });
             };
         };
