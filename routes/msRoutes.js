@@ -5,7 +5,7 @@ const MovieSeries = require("../models/msModels.js");
 
 router.post("/post", async (req, res) => {
     try {
-        const { msName, msAbout, msPoster, msLink, msSeason, msFormat, msIndustry, msOrigin, msReleaseDate, msGenre, msRating, msUploadedBy } = req.body;
+        const { msName, msAbout, msPoster, msLink, msSeason, msFormat, msIndustry, msReleaseDate, msGenre, msRating, msUploadedBy } = req.body;
 
         if (msName && msReleaseDate) {
             const existing = await MovieSeries.findOne({
@@ -20,7 +20,7 @@ router.post("/post", async (req, res) => {
         };
 
         const newMovieSeries = new MovieSeries({
-            msName, msAbout, msPoster, msLink, msSeason, msFormat, msIndustry, msOrigin, msReleaseDate, msGenre, msRating, msUploadedBy
+            msName, msAbout, msPoster, msLink, msSeason, msFormat, msIndustry, msReleaseDate, msGenre, msRating, msUploadedBy
         });
 
         const add = await newMovieSeries.save();

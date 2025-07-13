@@ -29,10 +29,6 @@ const movieSchema = new mongoose.Schema({
         type: String,
         required: true
     },
-    msOrigin: {
-        type: String,
-        required: true
-    },
     msSeason: {
         type: Number,
         required: true
