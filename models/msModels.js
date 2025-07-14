@@ -3,19 +3,23 @@ const mongoose = require("mongoose");
 const movieSchema = new mongoose.Schema({
     msName: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
     msAbout: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
     msPoster: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
     msLink: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
     msGenre: {
         type: [String],
@@ -23,11 +27,13 @@ const movieSchema = new mongoose.Schema({
     },
     msFormat: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
     msIndustry: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
     msSeason: {
         type: Number,
@@ -43,7 +49,8 @@ const movieSchema = new mongoose.Schema({
     },
     msUploadedBy: {
         type: String,
-        required: true
+        required: true,
+        trim: true
     },
     msWatched: {
         type: Boolean,
@@ -54,5 +61,7 @@ const movieSchema = new mongoose.Schema({
         default: null
     }
 });
+
+movieSchema.index({ msName: 1, msReleaseDate: 1 }, { unique: true });
 
 module.exports = mongoose.model("MovieSeries", movieSchema);

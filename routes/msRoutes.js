@@ -3,14 +3,16 @@ const router = express.Router();
 
 const MovieSeries = require("../models/msModels.js");
 
+const escapeRegex = str => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
 router.post("/post", async (req, res) => {
     try {
         const { msName, msAbout, msPoster, msLink, msSeason, msFormat, msIndustry, msReleaseDate, msGenre, msRating, msUploadedBy } = req.body;
 
         if (msName && msReleaseDate) {
             const existing = await MovieSeries.findOne({
-                msName: { $regex: new RegExp(`^${msName}$`, "i") },
-                msReleaseDate: msReleaseDate
+                msName: { $regex: new RegExp(`^${escapeRegex(msName)}$`, "i") },
+                msReleaseDate
             });
             if (existing) {
                 return res.status(409).json({
@@ -35,10 +37,10 @@ router.get("/get", async (req, res) => {
         const { genre, industry, format, search, watched } = req.query;
         const filter = {};
 
-        if (genre) filter.msGenre = { $in: [new RegExp(`^${genre}$`, "i")] };
-        if (format) filter.msFormat = { $regex: new RegExp(`^${format}$`, "i") };
-        if (industry) filter.msIndustry = { $regex: new RegExp(`^${industry}$`, "i") };
-        if (search) filter.msName = { $regex: new RegExp(search, "i") };
+        if (genre) filter.msGenre = { $in: [new RegExp(`^${escapeRegex(genre)}$`, "i")] };
+        if (format) filter.msFormat = { $regex: new RegExp(`^${escapeRegex(format)}$`, "i") };
+        if (industry) filter.msIndustry = { $regex: new RegExp(`^${escapeRegex(industry)}$`, "i") };
+        if (search) filter.msName = { $regex: new RegExp(escapeRegex(search), "i") };
 
         if (watched === "true") filter.msWatched = true;
         else if (watched === "false") filter.msWatched = false;
@@ -47,9 +49,7 @@ router.get("/get", async (req, res) => {
 
         const get = data.reduce((acc, item) => {
             const year = new Date(item.msReleaseDate).getFullYear();
-            if (!acc[year]) {
-                acc[year] = [];
-            };
+            if (!acc[year]) acc[year] = [];
             acc[year].push(item);
             return acc;
         }, {});
@@ -68,7 +68,7 @@ router.patch("/update/:id", async (req, res) => {
         if (body.msName && body.msReleaseDate) {
             const existing = await MovieSeries.findOne({
                 _id: { $ne: id },
-                msName: { $regex: new RegExp(`^${body.msName}$`, "i") },
+                msName: { $regex: new RegExp(`^${escapeRegex(body.msName)}$`, "i") },
                 msReleaseDate: body.msReleaseDate
             });
             if (existing) {
@@ -78,8 +78,7 @@ router.patch("/update/:id", async (req, res) => {
             };
         };
 
-        const options = { new: true };
-        const update = await MovieSeries.findByIdAndUpdate(id, body, options);
+        const update = await MovieSeries.findByIdAndUpdate(id, body, { new: true });
         res.status(200).json({ data: update, message: `The '${update.msName}' updated successfully.` });
     } catch (error) {
         res.status(400).json({ message: error.message });
