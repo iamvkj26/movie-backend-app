@@ -108,7 +108,7 @@ router.patch("/watched/:id", async (req, res) => {
 
         const watched = await item.save();
 
-        res.status(200).json({ data: watched, message: `The '${watched.msName}' marked as ${watched.msWatched ? "Watched" : "Unwatched"}${watched.msWatched ? ` at ${watched.msWatchedAt.toISOString()}` : ""}.` });
+        res.status(200).json({ message: `The '${watched.msName}' marked as ${watched.msWatched ? "Watched" : "Unwatched"}` });
     } catch (err) {
         res.status(400).json({ message: err.message });
     };
