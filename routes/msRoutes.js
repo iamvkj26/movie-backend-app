@@ -27,8 +27,8 @@ router.post("/post", async (req, res) => {
 
         const add = await newMovieSeries.save();
         res.status(200).json({ data: add, message: `The '${msName}' added successfully.` });
-    } catch (err) {
-        res.status(400).json({ error: err.message });
+    } catch (error) {
+        res.status(400).json({ error: error.message });
     };
 });
 
@@ -55,8 +55,8 @@ router.get("/get", async (req, res) => {
         }, {});
 
         res.status(200).json({ data: get, totalYears: Object.keys(get).length, totalData: data.length, message: `The MovieSeries fetched${genre ? ` in genre '${genre}'` : ""}${industry ? ` with industry '${industry}'` : ""}${format ? ` with format '${format}'` : ""}${search ? ` matching '${search}'` : ""}, sorted A-Z.` });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
     };
 });
 
@@ -109,8 +109,8 @@ router.patch("/watched/:id", async (req, res) => {
         const watched = await item.save();
 
         res.status(200).json({ message: `The '${watched.msName}' marked as ${watched.msWatched ? "Watched" : "Unwatched"}` });
-    } catch (err) {
-        res.status(400).json({ message: err.message });
+    } catch (error) {
+        res.status(400).json({ message: error.message });
     };
 });
 
