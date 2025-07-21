@@ -22,6 +22,7 @@ mongoose.connect(mongoString, {
     console.error("MongoDB connection error:", err)
 );
 
+app.use("/auth", require("./routes/authRoutes"));
 app.use("/movieseries", require("./routes/msRoutes"));
 
 app.listen(port, () => console.log(`Server is running on http://localhost:${port}`));

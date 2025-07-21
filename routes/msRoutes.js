@@ -1,11 +1,17 @@
 const express = require("express");
 const router = express.Router();
+const jwt = require("jsonwebtoken");
 
+const { authenticate, authorize } = require("../middleware/auth.js");
+
+const Auth = require("../models/authModel.js");
 const MovieSeries = require("../models/msModels.js");
+
+const jwtSecret = process.env.JWT_SECRET;
 
 const escapeRegex = str => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-router.post("/post", async (req, res) => {
+router.post("/post", authenticate, authorize("dev", "admin"), async (req, res) => {
     try {
         const { msName, msAbout, msPoster, msLink, msSeason, msFormat, msIndustry, msReleaseDate, msGenre, msRating, msUploadedBy } = req.body;
 
@@ -45,6 +51,27 @@ router.get("/get", async (req, res) => {
         if (watched === "true") filter.msWatched = true;
         else if (watched === "false") filter.msWatched = false;
 
+        const authHeader = req.headers.authorization;
+        const token = authHeader?.split(" ")[1];
+        let role = "guest";
+
+        if (token) {
+            try {
+                const decoded = jwt.verify(token, jwtSecret);
+                const user = await Auth.findById(decoded.id);
+                if (user && user.isApproved) role = user.role;
+            } catch (err) {
+                // invalid/expired token: skip
+            };
+        };
+
+        if (role !== "dev" || "admin") {
+            filter.msGenre = {
+                ...(filter.msGenre || {}),
+                $not: { $in: [/^18\+$/i, /hard romance/i] }
+            };
+        };
+
         const data = await MovieSeries.find(filter).sort({ msName: 1 });
 
         const get = data.reduce((acc, item) => {
@@ -60,7 +87,7 @@ router.get("/get", async (req, res) => {
     };
 });
 
-router.patch("/update/:id", async (req, res) => {
+router.patch("/update/:id", authenticate, authorize("dev"), async (req, res) => {
     try {
         const id = req.params.id;
         const body = req.body;
@@ -85,7 +112,7 @@ router.patch("/update/:id", async (req, res) => {
     };
 });
 
-router.delete("/delete/:id", async (req, res) => {
+router.delete("/delete/:id", authenticate, authorize("dev"), async (req, res) => {
     try {
         const id = req.params.id;
         const deleteD = await MovieSeries.findByIdAndDelete(id);
@@ -95,7 +122,7 @@ router.delete("/delete/:id", async (req, res) => {
     };
 });
 
-router.patch("/watched/:id", async (req, res) => {
+router.patch("/watched/:id", authenticate, authorize("dev", "admin"), async (req, res) => {
     try {
         const id = req.params.id;
         const item = await MovieSeries.findById(id);
