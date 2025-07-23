@@ -36,7 +36,7 @@ const movieSchema = new mongoose.Schema({
         trim: true
     },
     msSeason: {
-        type: Number,
+        type: String,
         required: true
     },
     msReleaseDate: {

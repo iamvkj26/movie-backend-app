@@ -65,7 +65,7 @@ router.get("/get", async (req, res) => {
             };
         };
 
-        if (role !== "dev" || "admin") {
+        if (role !== "dev" && "admin") {
             filter.msGenre = {
                 ...(filter.msGenre || {}),
                 $not: { $in: [/^18\+$/i, /hard romance/i] }

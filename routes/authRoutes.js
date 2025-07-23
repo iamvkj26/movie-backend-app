@@ -23,7 +23,7 @@ router.post("/signup", async (req, res) => {
         const auth = new Auth({ name, email, mobile, password: hashedPassword });
         await auth.save();
 
-        res.status(201).json({ userId: auth._id, message: "Signup successful. Awaiting approval." });
+        res.status(201).json({ data: auth, message: "Signup successful. Awaiting approval." });
     } catch (error) {
         res.status(500).json({ message: error.message });
     };
@@ -39,7 +39,7 @@ router.patch("/approve", authenticate, authorize("dev"), async (req, res) => {
 
         if (!updatedUser) return res.status(404).json({ message: "User not found." });
 
-        res.status(200).json({ message: `User approved and role set to '${role}'.` });
+        res.status(200).json({ data: updatedUser, message: `User approved and role set to '${role}'.` });
     } catch (err) {
         res.status(500).json({ message: "Server error.", error: err.message });
     };
@@ -59,7 +59,7 @@ router.post("/login", async (req, res) => {
 
         const token = jwt.sign({ id: user._id, email: user.email }, jwtSecret, { expiresIn: "1d" });
 
-        res.status(200).json({ token, message: "Login successful." });
+        res.status(200).json({ token: token, role: user.role, message: "Login successful." });
     } catch (error) {
         res.status(500).json({ message: error.message });
     };
