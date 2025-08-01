@@ -72,7 +72,7 @@ router.get("/get", async (req, res) => {
             };
         };
 
-        const data = await MovieSeries.find(filter).sort({ msName: 1 });
+        const data = await MovieSeries.find(filter).sort({ msReleaseDate: -1 });
 
         const get = data.reduce((acc, item) => {
             const year = new Date(item.msReleaseDate).getFullYear();
@@ -81,7 +81,7 @@ router.get("/get", async (req, res) => {
             return acc;
         }, {});
 
-        res.status(200).json({ data: get, totalYears: Object.keys(get).length, totalData: data.length, message: `The MovieSeries fetched${genre ? ` in genre '${genre}'` : ""}${industry ? ` with industry '${industry}'` : ""}${format ? ` with format '${format}'` : ""}${search ? ` matching '${search}'` : ""}, sorted A-Z.` });
+        res.status(200).json({ data: get, totalYears: Object.keys(get).length, totalData: data.length, message: `The MovieSeries fetched${genre ? ` in genre '${genre}'` : ""}${industry ? ` with industry '${industry}'` : ""}${format ? ` with format '${format}'` : ""}${search ? ` matching '${search}'` : ""}, sorted by latest release date.` });
     } catch (error) {
         res.status(500).json({ error: error.message });
     };
