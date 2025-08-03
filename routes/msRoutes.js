@@ -1,71 +1,24 @@
 const express = require("express");
 const router = express.Router();
-const jwt = require("jsonwebtoken");
 
-const { authenticate, authorize } = require("../middleware/auth.js");
-
-const Auth = require("../models/authModel.js");
 const MovieSeries = require("../models/msModels.js");
-
-const jwtSecret = process.env.JWT_SECRET;
+const Contact = require("../models/contactModel.js");
 
 const escapeRegex = str => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-router.post("/post", authenticate, authorize("dev", "admin"), async (req, res) => {
-    try {
-        const { msName, msAbout, msPoster, msLink, msSeason, msFormat, msIndustry, msReleaseDate, msGenre, msRating, msUploadedBy } = req.body;
-
-        if (msName && msReleaseDate) {
-            const existing = await MovieSeries.findOne({
-                msName: { $regex: new RegExp(`^${escapeRegex(msName)}$`, "i") },
-                msReleaseDate
-            });
-            if (existing) {
-                return res.status(409).json({
-                    message: `The '${msName}' already exists for this release date ${msReleaseDate}.`
-                });
-            };
-        };
-
-        const newMovieSeries = new MovieSeries({
-            msName, msAbout, msPoster, msLink, msSeason, msFormat, msIndustry, msReleaseDate, msGenre, msRating, msUploadedBy
-        });
-
-        const add = await newMovieSeries.save();
-        res.status(200).json({ data: add, message: `The '${msName}' added successfully.` });
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    };
-});
-
 router.get("/get", async (req, res) => {
     try {
-        const { genre, industry, format, search, watched } = req.query;
+        const { search, format, industry, genre, watched } = req.query;
         const filter = {};
 
-        if (genre) filter.msGenre = { $in: [new RegExp(`^${escapeRegex(genre)}$`, "i")] };
+        if (search) filter.msName = { $regex: new RegExp(escapeRegex(search), "i") };
         if (format) filter.msFormat = { $regex: new RegExp(`^${escapeRegex(format)}$`, "i") };
         if (industry) filter.msIndustry = { $regex: new RegExp(`^${escapeRegex(industry)}$`, "i") };
-        if (search) filter.msName = { $regex: new RegExp(escapeRegex(search), "i") };
-
+        if (genre) filter.msGenre = { $in: [new RegExp(`^${escapeRegex(genre)}$`, "i")] };
         if (watched === "true") filter.msWatched = true;
         else if (watched === "false") filter.msWatched = false;
 
-        const authHeader = req.headers.authorization;
-        const token = authHeader?.split(" ")[1];
-        let role = "guest";
-
-        if (token) {
-            try {
-                const decoded = jwt.verify(token, jwtSecret);
-                const user = await Auth.findById(decoded.id);
-                if (user && user.isApproved) role = user.role;
-            } catch (err) {
-                // invalid/expired token: skip
-            };
-        };
-
-        if (role !== "dev" && "admin") {
+        if (process.env.NODE_ENV === "production") {
             filter.msGenre = {
                 ...(filter.msGenre || {}),
                 $not: { $in: [/^18\+$/i, /hard romance/i] }
@@ -87,57 +40,48 @@ router.get("/get", async (req, res) => {
     };
 });
 
-router.patch("/update/:id", authenticate, authorize("dev"), async (req, res) => {
-    try {
-        const id = req.params.id;
-        const body = req.body;
-
-        if (body.msName && body.msReleaseDate) {
-            const existing = await MovieSeries.findOne({
-                _id: { $ne: id },
-                msName: { $regex: new RegExp(`^${escapeRegex(body.msName)}$`, "i") },
-                msReleaseDate: body.msReleaseDate
-            });
-            if (existing) {
-                return res.status(409).json({
-                    message: `The '${body.msName}' already exists for this release date ${body.msReleaseDate}.`
-                });
-            };
-        };
-
-        const update = await MovieSeries.findByIdAndUpdate(id, body, { new: true });
-        res.status(200).json({ data: update, message: `The '${update.msName}' updated successfully.` });
-    } catch (error) {
-        res.status(400).json({ message: error.message });
-    };
+router.get("/about", (req, res) => {
+    res.json({
+        name: "HelloHood",
+        tagline: "Your Personal Movie & Series Tracker",
+        description: "HelloHood is a simple platform to help users track, explore, and manage their favorite movies and web series. It supports filters, search, watched status, and more.",
+        techStack: {
+            frontend: "React + Bootstrap",
+            backend: "Node.js + Express",
+            database: "MongoDB",
+            auth: "JWT-based role protected API"
+        },
+        roles: {
+            guest: "Can view public content",
+            user: "Can only browse",
+            admin: "Can add, edit, delete, mark watched",
+            dev: "Same as admin, with full access"
+        },
+        dataHandling: {
+            source: "Manually curated",
+            privacy: "No personal tracking. Only authentication data stored.",
+            moderation: "Only approved admins/devs can modify content."
+        },
+        contact: {
+            email: "support@hellohood.com",
+            github: "https://github.com/yourrepo",
+            version: "1.0.0"
+        }
+    });
 });
 
-router.delete("/delete/:id", authenticate, authorize("dev"), async (req, res) => {
+router.post("/contact", async (req, res) => {
     try {
-        const id = req.params.id;
-        const deleteD = await MovieSeries.findByIdAndDelete(id);
-        res.status(200).json({ message: `The '${deleteD.msName}' deleted successfully.` });
+        const { name, email, mobile, message } = req.body;
+
+        if (!name || !email || !mobile || !message) return res.status(400).json({ message: "All fields are required." });
+
+        const contact = new Contact({ name, email, mobile, message });
+        await contact.save();
+
+        res.status(200).json({ data: contact, message: "Thanks for contacting us!, we will get back to you." });
     } catch (error) {
-        res.status(400).json({ message: error.message });
-    };
-});
-
-router.patch("/watched/:id", authenticate, authorize("dev", "admin"), async (req, res) => {
-    try {
-        const id = req.params.id;
-        const item = await MovieSeries.findById(id);
-
-        if (!item) return res.status(404).json({ message: "Movie/Series not found." });
-
-        const wasWatched = item.msWatched;
-        item.msWatched = !wasWatched;
-        item.msWatchedAt = !wasWatched ? new Date() : null;
-
-        const watched = await item.save();
-
-        res.status(200).json({ message: `The '${watched.msName}' marked as ${watched.msWatched ? "Watched" : "Unwatched"}` });
-    } catch (error) {
-        res.status(400).json({ message: error.message });
+        res.status(500).json({ message: "Failed to submit contact form", error: error.message });
     };
 });
 

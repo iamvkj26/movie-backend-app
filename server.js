@@ -22,6 +22,7 @@ mongoose.connect(mongoString, {
     console.error("MongoDB connection error:", err)
 );
 
+app.use("/admin", require("./routes/adminRoutes"));
 app.use("/auth", require("./routes/authRoutes"));
 app.use("/movieseries", require("./routes/msRoutes"));
 
