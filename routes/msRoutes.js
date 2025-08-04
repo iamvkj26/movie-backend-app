@@ -1,8 +1,11 @@
 const express = require("express");
 const router = express.Router();
+const jwt = require("jsonwebtoken");
 
 const MovieSeries = require("../models/msModels.js");
 const Contact = require("../models/contactModel.js");
+
+const jwtSecret = process.env.JWT_SECRET;
 
 const escapeRegex = str => str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
@@ -18,7 +21,21 @@ router.get("/get", async (req, res) => {
         if (watched === "true") filter.msWatched = true;
         else if (watched === "false") filter.msWatched = false;
 
-        if (process.env.NODE_ENV === "production") {
+        const authHeader = req.headers.authorization;
+        const token = authHeader?.split(" ")[1];
+        let role = "guest";
+
+        if (token) {
+            try {
+                const decoded = jwt.verify(token, jwtSecret);
+                const user = await Auth.findById(decoded.id);
+                if (user && user.isApproved) role = user.role;
+            } catch (err) {
+                // invalid/expired token: skip
+            };
+        };
+
+        if (role !== "dev" && "admin") {
             filter.msGenre = {
                 ...(filter.msGenre || {}),
                 $not: { $in: [/^18\+$/i, /hard romance/i] }
