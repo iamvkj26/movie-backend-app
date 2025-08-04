@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const jwt = require("jsonwebtoken");
 
+const Auth = require("../models/authModel.js");
 const MovieSeries = require("../models/msModels.js");
 const Contact = require("../models/contactModel.js");
 
